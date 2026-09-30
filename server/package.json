@@ -16,7 +16,8 @@
     "db:create": "tsx scripts/create-db.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:reset": "tsx scripts/reset-db.ts"
+    "db:reset": "tsx scripts/reset-db.ts",
+    "openapi": "tsx scripts/openapi.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -45,6 +46,7 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.19.0",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "yaml": "^2.9.1"
   }
 }

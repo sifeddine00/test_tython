@@ -372,13 +372,16 @@ export const openApiDocument = {
         tags: ['Tickets'],
         summary: 'Modifier titre, description ou priorité',
         description:
-          'Un agent ne peut modifier que les tickets dont il est auteur ou assigné (403 sinon).',
+          'Un agent ne peut modifier que les tickets dont il est auteur ou assigné (403 sinon).\n\n' +
+          'Le statut ne se modifie pas ici : il passe exclusivement par ' +
+          'PATCH /tickets/{id}/status. Un corps contenant `status` est rejeté en 400.',
         requestBody: {
           required: true,
           content: {
             'application/json': {
               schema: {
                 type: 'object',
+                additionalProperties: false,
                 minProperties: 1,
                 properties: {
                   title: { type: 'string', minLength: 3, maxLength: 200 },
@@ -417,20 +420,23 @@ export const openApiDocument = {
         summary: 'Changer le statut d\'un ticket',
         description:
           'Règle métier : la transition vers "closed" n\'est autorisée que si le ' +
-          'statut courant est "resolved". Sinon 400 TICKET_INVALID_STATUS_TRANSITION.',
+          'statut courant est "resolved". Sinon 400 TICKET_INVALID_STATUS_TRANSITION.\n\n' +
+          'Corps strict : un champ non listé ci-dessous est rejeté en 400. En particulier, ' +
+          'cette route n\'accepte pas de commentaire — l\'historique passe par ' +
+          'POST /tickets/{id}/comments.',
         requestBody: {
           required: true,
           content: {
             'application/json': {
               schema: {
                 type: 'object',
+                additionalProperties: false,
                 required: ['status'],
                 properties: {
                   status: {
                     type: 'string',
                     enum: ['open', 'in_progress', 'resolved', 'closed'],
                   },
-                  comment: { type: 'string', maxLength: 5000 },
                 },
               },
             },

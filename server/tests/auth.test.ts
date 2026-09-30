@@ -115,7 +115,7 @@ describe('Authentification', () => {
         .set('Authorization', `Bearer ${session.token}`)
         .expect(200);
 
-      expect(response.body.data.user).toMatchObject({
+      expect(response.body.data).toMatchObject({
         id: session.id,
         email: session.email,
         role: 'agent',

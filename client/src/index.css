@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/*
+ * Feuille de style principale.
+ *
+ * Tailwind v4 est importé par son plugin Vite : aucune configuration PostCSS ni
+ * fichier tailwind.config.js n'est nécessaire, les sources sont détectées
+ * automatiquement.
+ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}

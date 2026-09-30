@@ -31,5 +31,8 @@ export const meController = asyncHandler(async (req: Request, res: Response) => 
     throw new UnauthorizedError();
   }
 
-  res.status(200).json({ data: { user } });
+  // Convention de l'API : `data` porte directement la ressource. Seule la
+  // connexion renvoie un objet composé, puisqu'elle transporte un jeton *et*
+  // un profil.
+  res.status(200).json({ data: user });
 });
