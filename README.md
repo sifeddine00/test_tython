@@ -163,7 +163,7 @@ Depuis la racine du dépôt.
 | `npm run dev:client`       | Interface seule                                             |
 | `npm run build`            | Compile l'API et l'interface                               |
 | `npm start`                | Démarre l'API compilée (`dist/server.js`)                  |
-| `npm test`                 | Suite Vitest sur `helpdeskpro_test`                        |
+| `npm test`                 | 124 tests API + 41 tests interface                         |
 | `npm run lint`             | ESLint sur les deux workspaces                             |
 | `npm run typecheck`        | `tsc --noEmit` sur l'API, l'interface et `scripts/`        |
 | `npm run verify`           | `lint` + `typecheck` + `test` + `build`                    |
@@ -270,6 +270,7 @@ Le pool sélectionne la base selon `NODE_ENV` : en environnement `test` il point
 
 | Document                          | Contenu                                          |
 | --------------------------------- | ------------------------------------------------ |
+| [`docs/CONFORMITE.md`](docs/CONFORMITE.md) | Tableau exigence par exigence, avec la preuve exécutable de chacune |
 | [`docs/ERD.md`](docs/ERD.md)       | Schéma, contraintes, index, choix de conception   |
 | [`docs/DIFFERENCES.md`](docs/DIFFERENCES.md) | Écarts au cahier des charges, assumés ou non |
 | [`docs/openapi.yaml`](docs/openapi.yaml) | Spécification OpenAPI 3.0                    |
