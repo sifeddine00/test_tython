@@ -68,12 +68,11 @@ helpdeskpro/
 
 | Outil      | Version                       | Remarque                                                          |
 | ---------- | ----------------------------- | ----------------------------------------------------------------- |
-| Node.js    | `^20 \|\| ^22 \|\| >=24`      | Contrainte de `vitest` ; un Node 21 est refusé. Voir `.nvmrc`     |
+| Node.js    | `^20.19 \|\| ^22.13 \|\| >=24` | Exigé par Tailwind 4 et `eslint` ; Node 21 refusé par `vitest`     |
 | npm        | ≥ 10                          | Workspaces requis                                                 |
 | PostgreSQL | ≥ 14 (16 pour Docker)         | `gen_random_uuid()` est natif depuis la 13, sans extension         |
 
-La version supportée suit celle de `vitest` et de `happy-dom`. Le fichier `.nvmrc` permet
-de sélectionner la bonne avec `nvm use`.
+Le fichier `.nvmrc` permet de sélectionner la bonne version avec `nvm use`.
 
 > Pour une installation pas à pas, voir [`INSTALL.md`](INSTALL.md).
 

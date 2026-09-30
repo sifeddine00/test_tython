@@ -5,14 +5,18 @@ Guide de démarrage en 6 étapes. Le [README](./README.md) contient la référen
 
 ## Prérequis
 
-| Outil      | Version                  |
-| ---------- | ------------------------ |
-| Node.js    | `^20 \|\| ^22 \|\| >=24` |
-| npm        | ≥ 10                     |
-| PostgreSQL | ≥ 14                     |
+| Outil      | Version                            |
+| ---------- | ---------------------------------- |
+| Node.js    | `^20.19 \|\| ^22.13 \|\| >=24`     |
+| npm        | ≥ 10                               |
+| PostgreSQL | ≥ 14                               |
 
-Node 21 est volontairement exclu : `vitest` ne le supporte pas. Avec `nvm`, un
-`.nvmrc` est fourni — `nvm use`.
+La borne `20.19` n'est pas arbitraire : elle est exigée par la chaîne Tailwind 4
+(`@csstools/*`) et par `eslint`. Un Node 20.17 installe le projet mais émet un
+`EBADENGINE` à chaque installation.
+
+Node 21 est exclu : `vitest` ne le supporte pas. Avec `nvm`, un `.nvmrc` est fourni —
+`nvm use`.
 
 ## 1. Base de données
 
