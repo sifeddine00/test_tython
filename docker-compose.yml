@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: helpdeskpro_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Helpdesk2026!
+      POSTGRES_DB: helpdeskpro
+    ports:
+      - '5432:5432'
+    volumes:
+      - helpdeskpro_pgdata:/var/lib/postgresql/data
+      - ./server/migrations:/docker-entrypoint-initdb.d/migrations:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d helpdeskpro']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  helpdeskpro_pgdata:
+    name: helpdeskpro_pgdata

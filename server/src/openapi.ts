@@ -1,0 +1,587 @@
+/**
+ * Document OpenAPI 3.0 exposé sur /api/docs (Swagger UI) et /api/docs.json.
+ * Rédigé à la main pour rester aligné à 100 % sur le code : aucune génération
+ * automatique qui pourrait diverger du comportement réel.
+ */
+
+const errorResponse = (description: string) => ({
+  description,
+  content: {
+    'application/json': {
+      schema: { $ref: '#/components/schemas/Error' },
+    },
+  },
+});
+
+export const openApiDocument = {
+  openapi: '3.0.3',
+  info: {
+    title: 'HelpDeskPro API',
+    version: '1.0.0',
+    description:
+      'API REST de gestion de tickets support. Authentification JWT Bearer, ' +
+      'rôles admin et agent. Règles métier : un ticket ne peut être fermé ' +
+      'que s\'il est déjà résolu, et aucun commentaire ne peut être ajouté ' +
+      'à un ticket fermé.',
+    license: { name: 'MIT' },
+  },
+  servers: [{ url: '/api', description: 'Serveur courant' }],
+  tags: [
+    { name: 'Auth', description: 'Authentification' },
+    { name: 'Users', description: 'Utilisateurs' },
+    { name: 'Tickets', description: 'Tickets support' },
+    { name: 'Comments', description: 'Commentaires de ticket' },
+    { name: 'Dashboard', description: 'Statistiques' },
+  ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+    schemas: {
+      Error: {
+        type: 'object',
+        required: ['error'],
+        properties: {
+          error: {
+            type: 'object',
+            required: ['code', 'message'],
+            properties: {
+              code: { type: 'string', example: 'VALIDATION_ERROR' },
+              message: { type: 'string', example: 'Données invalides.' },
+              details: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    path: { type: 'string', example: 'title' },
+                    message: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      UserRef: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          fullName: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          role: { type: 'string', enum: ['admin', 'agent'] },
+        },
+      },
+      User: {
+        allOf: [
+          { $ref: '#/components/schemas/UserRef' },
+          {
+            type: 'object',
+            properties: {
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        ],
+      },
+      Ticket: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          title: { type: 'string', maxLength: 200 },
+          description: { type: 'string' },
+          priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+          status: { type: 'string', enum: ['open', 'in_progress', 'resolved', 'closed'] },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          resolvedAt: { type: 'string', format: 'date-time', nullable: true },
+          createdBy: { $ref: '#/components/schemas/UserRef' },
+          assignedTo: {
+            allOf: [{ $ref: '#/components/schemas/UserRef' }],
+            nullable: true,
+          },
+          resolvedBy: {
+            allOf: [{ $ref: '#/components/schemas/UserRef' }],
+            nullable: true,
+          },
+        },
+      },
+      Comment: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          ticketId: { type: 'string', format: 'uuid' },
+          message: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' },
+          author: { $ref: '#/components/schemas/UserRef' },
+        },
+      },
+      PaginationMeta: {
+        type: 'object',
+        properties: {
+          page: { type: 'integer' },
+          limit: { type: 'integer' },
+          total: { type: 'integer' },
+          totalPages: { type: 'integer' },
+        },
+      },
+      DashboardStats: {
+        type: 'object',
+        properties: {
+          totalTickets: { type: 'integer' },
+          byStatus: {
+            type: 'object',
+            properties: {
+              open: { type: 'integer' },
+              in_progress: { type: 'integer' },
+              resolved: { type: 'integer' },
+              closed: { type: 'integer' },
+            },
+          },
+          topAgents: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                userId: { type: 'string', format: 'uuid' },
+                fullName: { type: 'string' },
+                email: { type: 'string' },
+                resolvedCount: { type: 'integer' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  security: [{ bearerAuth: [] }],
+  paths: {
+    '/auth/login': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Ouvrir une session',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  password: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Session ouverte',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'object',
+                      properties: {
+                        token: { type: 'string' },
+                        tokenType: { type: 'string', example: 'Bearer' },
+                        expiresIn: { type: 'string', example: '8h' },
+                        user: { $ref: '#/components/schemas/User' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: errorResponse('Données de connexion invalides'),
+          401: errorResponse('Email ou mot de passe incorrect'),
+        },
+      },
+    },
+    '/auth/me': {
+      get: {
+        tags: ['Auth'],
+        summary: 'Profil de l\'utilisateur authentifié',
+        responses: {
+          200: {
+            description: 'Profil courant',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/User' } },
+                },
+              },
+            },
+          },
+          401: errorResponse('Jeton absent ou invalide'),
+        },
+      },
+    },
+    '/users': {
+      get: {
+        tags: ['Users'],
+        summary: 'Lister les utilisateurs (source du sélecteur d\'assignation)',
+        parameters: [
+          {
+            name: 'role',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['admin', 'agent'] },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Liste des utilisateurs',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: { type: 'array', items: { $ref: '#/components/schemas/User' } },
+                  },
+                },
+              },
+            },
+          },
+          401: errorResponse('Non authentifié'),
+        },
+      },
+    },
+    '/tickets': {
+      get: {
+        tags: ['Tickets'],
+        summary: 'Lister les tickets avec filtres et recherche',
+        parameters: [
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string', enum: ['open', 'in_progress', 'resolved', 'closed'] },
+          },
+          {
+            name: 'priority',
+            in: 'query',
+            schema: { type: 'string', enum: ['low', 'medium', 'high'] },
+          },
+          {
+            name: 'assignedTo',
+            in: 'query',
+            description: 'UUID d\'un agent, ou "unassigned" pour les tickets sans agent.',
+            schema: { type: 'string' },
+          },
+          {
+            name: 'search',
+            in: 'query',
+            description: 'Recherche insensible à la casse dans le titre ou la description.',
+            schema: { type: 'string' },
+          },
+          { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+        ],
+        responses: {
+          200: {
+            description: 'Liste paginée des tickets',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: { type: 'array', items: { $ref: '#/components/schemas/Ticket' } },
+                    meta: { $ref: '#/components/schemas/PaginationMeta' },
+                  },
+                },
+              },
+            },
+          },
+          400: errorResponse('Paramètre de filtre invalide'),
+          401: errorResponse('Non authentifié'),
+        },
+      },
+      post: {
+        tags: ['Tickets'],
+        summary: 'Créer un ticket',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['title', 'description'],
+                properties: {
+                  title: { type: 'string', minLength: 3, maxLength: 200 },
+                  description: { type: 'string', minLength: 5, maxLength: 5000 },
+                  priority: {
+                    type: 'string',
+                    enum: ['low', 'medium', 'high'],
+                    default: 'medium',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Ticket créé',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/Ticket' } },
+                },
+              },
+            },
+          },
+          400: errorResponse('Données invalides'),
+          401: errorResponse('Non authentifié'),
+        },
+      },
+    },
+    '/tickets/{id}': {
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+      ],
+      get: {
+        tags: ['Tickets'],
+        summary: 'Détail d\'un ticket',
+        responses: {
+          200: {
+            description: 'Ticket',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/Ticket' } },
+                },
+              },
+            },
+          },
+          400: errorResponse('Identifiant invalide'),
+          401: errorResponse('Non authentifié'),
+          404: errorResponse('Ticket introuvable'),
+        },
+      },
+      put: {
+        tags: ['Tickets'],
+        summary: 'Modifier titre, description ou priorité',
+        description:
+          'Un agent ne peut modifier que les tickets dont il est auteur ou assigné (403 sinon).',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                minProperties: 1,
+                properties: {
+                  title: { type: 'string', minLength: 3, maxLength: 200 },
+                  description: { type: 'string', minLength: 5, maxLength: 5000 },
+                  priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Ticket mis à jour',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/Ticket' } },
+                },
+              },
+            },
+          },
+          400: errorResponse('Données invalides'),
+          401: errorResponse('Non authentifié'),
+          403: errorResponse('Droits insuffisants'),
+          404: errorResponse('Ticket introuvable'),
+        },
+      },
+    },
+    '/tickets/{id}/status': {
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+      ],
+      patch: {
+        tags: ['Tickets'],
+        summary: 'Changer le statut d\'un ticket',
+        description:
+          'Règle métier : la transition vers "closed" n\'est autorisée que si le ' +
+          'statut courant est "resolved". Sinon 400 TICKET_INVALID_STATUS_TRANSITION.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['status'],
+                properties: {
+                  status: {
+                    type: 'string',
+                    enum: ['open', 'in_progress', 'resolved', 'closed'],
+                  },
+                  comment: { type: 'string', maxLength: 5000 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Statut mis à jour',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/Ticket' } },
+                },
+              },
+            },
+          },
+          400: errorResponse('Transition interdite ou données invalides'),
+          401: errorResponse('Non authentifié'),
+          403: errorResponse('Droits insuffisants'),
+          404: errorResponse('Ticket introuvable'),
+        },
+      },
+    },
+    '/tickets/{id}/assign': {
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+      ],
+      patch: {
+        tags: ['Tickets'],
+        summary: 'Assigner ou désassigner un ticket (administrateur uniquement)',
+        description:
+          'Réservé au rôle admin : un agent reçoit 403. La cible doit être un ' +
+          'utilisateur de rôle "agent". `null` désassigne le ticket.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['assignedTo'],
+                properties: {
+                  assignedTo: {
+                    type: 'string',
+                    format: 'uuid',
+                    nullable: true,
+                    example: '3f0e1b2c-4d5a-4b6e-8c9d-0e1f2a3b4c5d',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Ticket assigné',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/Ticket' } },
+                },
+              },
+            },
+          },
+          400: errorResponse('La cible n\'est pas un agent'),
+          401: errorResponse('Non authentifié'),
+          403: errorResponse('Action réservée aux administrateurs'),
+          404: errorResponse('Ticket introuvable'),
+        },
+      },
+    },
+    '/tickets/{id}/comments': {
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+      ],
+      get: {
+        tags: ['Comments'],
+        summary: 'Historique des commentaires d\'un ticket (ordre chronologique)',
+        responses: {
+          200: {
+            description: 'Commentaires',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: { type: 'array', items: { $ref: '#/components/schemas/Comment' } },
+                  },
+                },
+              },
+            },
+          },
+          401: errorResponse('Non authentifié'),
+          404: errorResponse('Ticket introuvable'),
+        },
+      },
+      post: {
+        tags: ['Comments'],
+        summary: 'Ajouter un commentaire',
+        description:
+          'Règle métier : refusé avec 400 COMMENT_ON_CLOSED_TICKET si le ticket est fermé.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message'],
+                properties: { message: { type: 'string', minLength: 1, maxLength: 5000 } },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Commentaire créé',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/Comment' } },
+                },
+              },
+            },
+          },
+          400: errorResponse('Ticket fermé ou message invalide'),
+          401: errorResponse('Non authentifié'),
+          404: errorResponse('Ticket introuvable'),
+        },
+      },
+    },
+    '/dashboard/stats': {
+      get: {
+        tags: ['Dashboard'],
+        summary: 'Statistiques : total, open, in_progress, top 5 agents résolus',
+        responses: {
+          200: {
+            description: 'Statistiques',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { data: { $ref: '#/components/schemas/DashboardStats' } },
+                },
+              },
+            },
+          },
+          401: errorResponse('Non authentifié'),
+        },
+      },
+    },
+  },
+} as const;
