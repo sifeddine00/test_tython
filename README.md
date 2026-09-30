@@ -114,7 +114,7 @@ npm run setup
 `npm run setup` enchaîne `db:create`, `db:migrate` et `db:seed`. Les étapes restent
 disponibles séparément.
 
-``db:migrate` applique chaque fichier `NNN_nom.sql` encore absent de `schema_migrations`, dans
+`db:migrate` applique chaque fichier `NNN_nom.sql` encore absent de `schema_migrations`, dans
 l'ordre lexicographique, chaque fichier dans une transaction. Un échec annule la migration sans
 désynchroniser la table de suivi.
 
