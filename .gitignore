@@ -33,3 +33,6 @@ pnpm-debug.log*
 # Artefacts de build
 coverage
 *.tsbuildinfo
+
+# Archive de livraison, régénérée depuis `git archive`
+HelpDeskPro.zip
