@@ -84,7 +84,8 @@ supprimé.
 | `ticket_comments_ticket_fk`           | `ON DELETE CASCADE`                                |
 | `ticket_comments_author_fk`           | `ON DELETE RESTRICT`                               |
 
-L'interdiction de commenter un ticket `closed` (règle 4.3) **n'est pas** une contrainte SQL :
+L'interdiction de commenter un ticket `closed` (règle métier du §4.3) **n'est pas** une
+contrainte SQL :
 elle dépend du workflow et vit dans `comment.service.ts`. La voir en base coûterait un
 déclencheur qui pewrait à chaque insertion.
 

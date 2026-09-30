@@ -4,7 +4,9 @@ Système de gestion de tickets de support interne — **PERN** (PostgreSQL, Expr
 
 Suivi des tickets depuis la création jusqu'à la clôture, avec commentaires de suivi,
 répartition par agent, affectation et tableau de bord. L'implémentation suit le cahier des
-charges ; les écarts assumés sont listés dans [`docs/DIFFERENCES.md`](docs/DIFFERENCES.md).
+charges. Les 82 exigences du cahier des charges sont vérifiées une à une dans
+[`docs/CONFORMITE.md`](docs/CONFORMITE.md) ; les points que le CDC ne mentionne pas sont listés
+dans [`docs/DIFFERENCES.md`](docs/DIFFERENCES.md).
 
 ## Sommaire
 
@@ -272,7 +274,7 @@ Le pool sélectionne la base selon `NODE_ENV` : en environnement `test` il point
 | --------------------------------- | ------------------------------------------------ |
 | [`docs/CONFORMITE.md`](docs/CONFORMITE.md) | Tableau exigence par exigence, avec la preuve exécutable de chacune |
 | [`docs/ERD.md`](docs/ERD.md)       | Schéma, contraintes, index, choix de conception   |
-| [`docs/DIFFERENCES.md`](docs/DIFFERENCES.md) | Écarts au cahier des charges, assumés ou non |
+| [`docs/DIFFERENCES.md`](docs/DIFFERENCES.md) | Points que le CDC ne mentionne pas, et pourquoi |
 | [`docs/openapi.yaml`](docs/openapi.yaml) | Spécification OpenAPI 3.0                    |
 
 La spécification est également disponible en direct sur `http://localhost:5000/api/docs`

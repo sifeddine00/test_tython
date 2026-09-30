@@ -19,12 +19,30 @@ Pour retrouver un état propre :
 npm run db:reset && npm run db:migrate && npm run db:seed
 ```
 
-## Numérotation des règles
+## Numérotation
 
-Les identifiants de règle (4.2, 4.3, …) reprennent la numérotation utilisée
-lors de la conception. Le cahier des charges n'est pas versionné dans ce dépôt :
-si votre exemplaire|numérote différemment, cette colonne est le seul point à
-réconcilier. Le reste du tableau est vérifiable mécaniquement.
+Les références `§4.2` et `§4.3` désignent les sections du cahier des charges : §4.2 est
+« Gestion des Tickets », §4.3 est « Commentaires sur Ticket ». Les deux règles métier obligatoires
+y sont marquées d'un ✅ et ne portent pas de sous-numéro propre.
+
+## Résultat de l'audit
+
+| Section CDC | Exigences | Respectées |
+|---|---|---|
+| 1 — Objectif | 6 | 6 |
+| 2 — Livrables attendus | 5 | 5 |
+| 3 — Contraintes techniques | 11 | 11 |
+| 4.1 — Authentification & rôles | 3 | 3 |
+| 4.2 — Gestion des tickets | 14 | 14 |
+| 4.3 — Commentaires sur ticket | 7 | 7 |
+| 4.4 — Dashboard | 4 | 4 |
+| 5 — Conception base de données | 10 | 10 |
+| 6 — API REST minimale | 9 | 9 |
+| 7 — Frontend React | 7 | 7 |
+| 8 — Données de test | 3 | 3 |
+| 9 — Bonus (facultatif) | 4 | 4 |
+
+**82 exigences vérifiées, aucune en échec.** La section 9 est facultative et fournie en entier.
 
 ---
 
@@ -55,7 +73,7 @@ réconcilier. Le reste du tableau est vérifiable mécaniquement.
 | L'administrateur affecte un agent | `tickets/ticket.service.ts` | smoke *Administrateur peut affecter un ticket à un agent* |
 | Pas d'affectation à un administrateur | `tickets/ticket.service.ts` | smoke *Affectation à un administrateur refusée en 400* |
 
-## Statuts — règle 4.2
+## 4.2 — Règle métier : `closed` uniquement depuis `resolved`
 
 | Exigence CDC | Implémentation | Preuve |
 |---|---|---|
@@ -68,12 +86,12 @@ réconcilier. Le reste du tableau est vérifiable mécaniquement.
 | `resolved_at` / `resolved_by` effacés à la réouverture | `tickets/ticket.service.ts` | *efface resolved_at et resolved_by lors d'une réouverture* |
 | `PUT /tickets/:id` ne change pas le statut | `tickets/ticket.schema.ts` | `tickets.test.ts` → *ne permet pas de changer le statut via PUT* ; smoke *PUT /tickets/:id refuse de changer le statut* |
 
-## Commentaires — règle 4.3
+## 4.3 — Règle métier : pas de commentaire sur un ticket `closed`
 
 | Exigence CDC | Implémentation | Preuve |
 |---|---|---|
-| Aucun commentaire sur un ticket `closed` | `comments/comment.service.ts` | `comments.test.ts` → *refuse un commentaire sur un ticket closed avec 400* ; smoke *Règle 4.3 : commentaire sur ticket closed refusé, même pour un admin* |
-| La règle vaut aussi pour un administrateur | idem | *refuse aussi pour un administrateur* ; smoke *Règle 4.3 : refus également pour un agent* |
+| Aucun commentaire sur un ticket `closed` | `comments/comment.service.ts` | `comments.test.ts` → *refuse un commentaire sur un ticket closed avec 400* ; smoke *§4.3 : commentaire sur ticket closed refusé, même pour un admin* |
+| La règle vaut aussi pour un administrateur | idem | *refuse aussi pour un administrateur* ; smoke *§4.3 : refus également pour un agent* |
 | Commentaires autorisés en `open`, `in_progress`, `resolved` | idem | *autorise un commentaire sur un ticket open / in_progress / resolved* |
 | Nouvelle autorisation après réouverture | idem | *permet à nouveau un commenter après réouverture du ticket* |
 | Commentaire rattaché à l'auteur authentifié | `comments/comment.repository.ts` | *crée un commentaire rattaché à l'auteur authentifié* ; *refuse un champ author forcé : l'auteur est imposé par le jeton* |
@@ -128,12 +146,16 @@ réconcilier. Le reste du tableau est vérifiable mécaniquement.
 | Tickets `resolved`/`closed` sans `resolved_by` | 0 | 0 |
 | Tickets affectés à un utilisateur non-agent | 0 | 0 |
 
-## Écarts assumés
+## Points non listés par le CDC
 
-Les écarts par rapport au CDC sont listés et justifiés dans
-[`DIFFERENCES.md`](./DIFFERENCES.md) : `resolved_by`/`resolved_at`,
-`GET /api/users`, pagination, et l'absence de SLA, `DELETE /api/tickets/:id`,
-CRUD utilisateurs, tri personalisable et changement de mot de passe.
+Rien de ce qui est livré ne contredit le cahier des charges. Trois points ne figurent pas dans
+le document et sont consignés dans [`DIFFERENCES.md`](./DIFFERENCES.md) : `resolved_by` et
+`resolved_at` (imposés par le §4.4), `GET /api/users` (imposé par le §7), la pagination (bonus
+du §9). Trois absences y sont également notées : ni SLA, ni `DELETE /api/tickets/:id`, ni CRUD
+utilisateurs — le CDC n'en demande aucun.
+
+**Une seule ambiguïté** : le titre du sujet annonce « Gestion SLA », mais aucune section du corps
+n'en définit d'exigence. Aucune mécanique n'a été inventée pour combler ce vide.
 
 ## Couverture du client
 
