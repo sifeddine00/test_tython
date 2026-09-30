@@ -66,11 +66,16 @@ helpdeskpro/
 
 ## Prérequis
 
-| Outil      | Version  | Remarque                                                    |
-| ---------- | -------- | ---------------------------------------------------------- |
-| Node.js    | ≥ 20     | Déclaré dans `engines`                                       |
-| npm        | ≥ 10     | Workspaces requis                                           |
-| PostgreSQL | ≥ 14     | `gen_random_uuid()` est natif depuis la 13, sans extension   |
+| Outil      | Version                       | Remarque                                                          |
+| ---------- | ----------------------------- | ----------------------------------------------------------------- |
+| Node.js    | `^20 \|\| ^22 \|\| >=24`      | Contrainte de `vitest` ; un Node 21 est refusé. Voir `.nvmrc`     |
+| npm        | ≥ 10                          | Workspaces requis                                                 |
+| PostgreSQL | ≥ 14 (16 pour Docker)         | `gen_random_uuid()` est natif depuis la 13, sans extension         |
+
+La version supportée suit celle de `vitest` et de `happy-dom`. Le fichier `.nvmrc` permet
+de sélectionner la bonne avec `nvm use`.
+
+> Pour une installation pas à pas, voir [`INSTALL.md`](INSTALL.md).
 
 ## Installation
 
@@ -104,11 +109,13 @@ si une variable requise manque, plutôt que d'échouer plus tard sur une requêt
 
 ```bash
 npm install
-npm run db:migrate
-npm run db:seed
+npm run setup
 ```
 
-`db:migrate` applique chaque fichier `NNN_nom.sql` encore absent de `schema_migrations`, dans
+`npm run setup` enchaîne `db:create`, `db:migrate` et `db:seed`. Les étapes restent
+disponibles séparément.
+
+``db:migrate` applique chaque fichier `NNN_nom.sql` encore absent de `schema_migrations`, dans
 l'ordre lexicographique, chaque fichier dans une transaction. Un échec annule la migration sans
 désynchroniser la table de suivi.
 
@@ -272,6 +279,7 @@ Le pool sélectionne la base selon `NODE_ENV` : en environnement `test` il point
 
 | Document                          | Contenu                                          |
 | --------------------------------- | ------------------------------------------------ |
+| [`INSTALL.md`](INSTALL.md)        | Installation pas à pas, en 6 étapes             |
 | [`docs/CONFORMITE.md`](docs/CONFORMITE.md) | Tableau exigence par exigence, avec la preuve exécutable de chacune |
 | [`docs/ERD.md`](docs/ERD.md)       | Schéma, contraintes, index, choix de conception   |
 | [`docs/DIFFERENCES.md`](docs/DIFFERENCES.md) | Points que le CDC ne mentionne pas, et pourquoi |

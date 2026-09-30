@@ -1,3 +1,15 @@
+# PostgreSQL de développement.
+#
+# Le conteneur ne fournit QUE le serveur : aucune migration n'est montée dans
+# `/docker-entrypoint-initdb.d`. L'image n'exécute que les `.sql` placés
+# directement dans ce dossier, pas ceux d'un sous-dossier, et le nommage
+# `schema_migrations` doit rester géré par un seul outil.
+#
+# Le schéma est donc créé par `npm run setup` (voir INSTALL.md), qui est aussi
+# la seule voie pour peupler `helpdeskpro_test`, inexistante ici :
+#
+#   npm run setup
+#
 services:
   postgres:
     image: postgres:16-alpine
@@ -11,7 +23,6 @@ services:
       - '5432:5432'
     volumes:
       - helpdeskpro_pgdata:/var/lib/postgresql/data
-      - ./server/migrations:/docker-entrypoint-initdb.d/migrations:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d helpdeskpro']
       interval: 5s

@@ -1,9 +1,16 @@
 -- -----------------------------------------------------------------------------
 -- HelpDeskPro - Index de recherche plein texte (section 4.2 du CDC)
 --
--- Migration volontairement isolée : si l'extension pg_trgm est refusée par
--- l'hébergeur, l'application fonctionne toujours. Seule la recherche
--- full-text bascule sur un sequential scan au lieu d'un index lookup.
+-- Migration applicative : elle n'est PAS exécutée par l'image Docker, qui ne
+-- joue que les `.sql` placés à la racine de `/docker-entrypoint-initdb.d`. Seul
+-- `npm run db:migrate` applique ce dossier, dans l'ordre lexicographique.
+--
+-- `pg_trgm` est fournie par défaut sur toute installation PostgreSQL standard.
+-- Si un hébergeur la refuse, `db:migrate` s'arrête en erreur : la migration
+-- étant transactionnelle, elle est annulée entièrement, `schema_migrations` reste
+-- inchangée et aucun index n'est créé. L'application, elle, ne dépend pas de
+-- l'extension — sans index, la recherche `ILIKE '%terme%'` passe en
+-- sequential scan, plus lent mais correct.
 -- -----------------------------------------------------------------------------
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
